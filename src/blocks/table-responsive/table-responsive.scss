@@ -1,0 +1,89 @@
+// В этом файле должны быть стили для БЭМ-блока table-responsive, его элементов,
+// модификаторов, псевдоселекторов, псевдоэлементов, $media-условий...
+// Очередность: http://nicothin.github.io/idiomatic-pre-CSS/#priority
+
+$border-color:                hsl(0, 0%, 60%) !default;
+
+$screen-xs:                   0 !default;
+$screen-sm:                   480px !default;
+$screen-md:                   768px !default;
+$screen-lg:                   992px !default;
+$screen-xl:                   1200px !default;
+$screen-xxl:                  1800px !default;
+
+.table-responsive {
+
+  $block-name:                &; // #{$block-name}__element
+
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  border: 1px solid $border-color;
+  width: 100%;
+
+  caption {
+    caption-side: top;
+    text-align: left;
+    padding: 0.4em $field-padding-horizontal;
+    border: 1px solid $border-color;
+    border-bottom: 0;
+    font-size: $font-size--small;
+    line-height: 1em;
+    color: $text-color--muted;
+  }
+
+  td,
+  th {
+    padding: $field-padding-vertical $field-padding-horizontal;
+    vertical-align: top;
+    border-bottom: 1px solid $border-color;
+
+    &:not(:first-child) {
+      border-left: 1px solid $border-color;
+    }
+  }
+
+  th {
+    text-align: left;
+  }
+
+  @media (max-width: ($screen-md - 1)) {
+    display: block;
+    border: 0;
+
+    caption {
+      display: none;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: block;
+      width: 100%;
+
+      tr {
+        display: block;
+        border: 1px solid $border-color;
+        border-bottom: 0;
+
+        &:not(:last-child) { // stylelint-disable-line  max-nesting-depth
+          margin-bottom: $line-height;
+        }
+      }
+
+      td {
+        display: block;
+        width: 100%;
+        border-right: 0 !important; // stylelint-disable-line  declaration-no-important
+        border-left: 0 !important; // stylelint-disable-line  declaration-no-important
+
+        &:before { // stylelint-disable-line  max-nesting-depth
+          display: block;
+          font-weight: 700;
+          content: attr(data-label);
+        }
+      }
+    }
+  }
+}

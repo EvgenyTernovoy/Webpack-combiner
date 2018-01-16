@@ -1,0 +1,88 @@
+// В этом файле должны быть стили для БЭМ-блока field-toggler, его элементов,
+// модификаторов, псевдоселекторов, псевдоэлементов, @media-условий...
+// Очередность: http://nicothin.github.io/idiomatic-pre-CSS/#priority
+
+$gray-lightest:               hsl(0, 0%, 90%);
+$border-color:                hsl(0, 0%, 60%) !default;
+
+$line-height:                 1.5 !default;
+
+.field-toggler {
+
+  $block-name:                &; // #{$block-name}__element
+
+  display: block;
+  margin-bottom: 1rem;
+
+  &__title {
+    @include field-name;
+  }
+
+  &__input-wrap {
+
+    & + & {
+      margin-top: 1rem;
+    }
+  }
+
+  &__name {
+    position: relative;
+    display: inline-block;
+    padding-left: 3.2rem;
+    margin-right: 0.6rem;
+    font-weight: 400;
+    line-height: $line-height;
+  }
+
+  &__name-text {
+    display: inline-block;
+
+    &:before {
+      content: '';
+      position: absolute;
+      top: rem(3px);
+      left: 0;
+      width: rem(35px);
+      height: rem(18px);
+      background-color: #fff;
+      border: 1px solid $border-color;
+
+      @at-root input:focus ~ & {
+        @include field-focus;
+      }
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      top: rem(5px);
+      left: 2px;
+      width: rem(14px);
+      height: rem(14px);
+      background-color: $gray-lightest;
+      border: 1px solid $border-color;
+      transition: all 0.3s;
+    }
+
+    @at-root input:checked ~ &:after {
+      transform: translate(rem(17px), 0);
+    }
+  }
+
+  &__input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    opacity: 0;
+  }
+
+  &__help-text-wrap {
+    padding-left: 3.2em;
+  }
+
+  &__help-text {
+    @include field-help-text;
+  }
+}
