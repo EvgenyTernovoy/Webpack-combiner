@@ -63,11 +63,11 @@ const isDev = !process.env.NODE_ENV || process.env.NODE_ENV == 'dev';
 // Перечисление и настройки плагинов postCSS, которыми обрабатываются стилевые файлы
 let postCssPlugins = [
   autoprefixer(), // настройки вынесены в package.json, дабы получать их для любой задачи
-  mqpacker({
+  mqpacker({ //Pack same CSS media query rules into one using PostCSS
     sort: true
   }),
-  atImport(),
-  inlineSVG(),
+  atImport(), //PostCSS plugin to transform @import rules by inlining content.
+  inlineSVG(), //PostCSS plugin to reference an SVG file and control its attributes with CSS syntax
   objectFitImages(),
   imageInliner({
     // Осторожнее с именами файлов картинок! Добавляйте имя блока как префикс к имени картинки.
