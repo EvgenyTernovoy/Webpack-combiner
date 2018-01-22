@@ -21,11 +21,14 @@ let styleFileMsg = '/*!*\n * ВНИМАНИЕ! Этот файл генерир�
 
 // Формирование и запись диспетчера подключений (style.scss), который компилируется в style.min.css
 let styleImports = styleFileMsg;
-lists.css.forEach(function(blockPath) {
-    styleImports += '@import \''+blockPath+'\';\n';
+lists.css.forEach(function (blockPath) {
+    styleImports += '@import \'' + blockPath + '\';\n';
 });
 styleImports = styleImports += styleFileMsg;
 fs.writeFileSync(dirs.srcPath + 'scss/style.scss', styleImports);
+const now = Date.now() / 1000;
+const then = now - 10;
+fs.utimesSync( dirs.srcPath + 'scss/style.scss', then, then );
 
 module.exports = env => {
 
@@ -63,7 +66,7 @@ module.exports = env => {
                     jQuery: 'jquery'
                 }),
                 // можно задать путь и расширение, но будет путаница
-                new ExtractTextPlugin('[name]')
+                new ExtractTextPlugin('[name]', )
             ],
             module: {
                 rules: [
@@ -114,7 +117,8 @@ module.exports = env => {
                         })
                     }
                 ]
-            }
+            },
+            watch:true
         }
     ]);
 
