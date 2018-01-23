@@ -8,7 +8,7 @@ const devtool = require('./webpack/devtool');
 
 const paths = {
     build: path.join(__dirname, '../public'),
-    sass: path.join(__dirname, 'sass')
+    sass : path.join(__dirname, 'sass')
 };
 
 // Получение настроек проекта из projectConfig.json
@@ -30,6 +30,25 @@ const now = Date.now() / 1000;
 const then = now - 10;
 fs.utimesSync( dirs.srcPath + 'scss/style.scss', then, then );
 
+// Перечисление и настройки плагинов postCSS, которыми обрабатываются стилевые файлы
+/*let postCssPlugins = [
+    autoprefixer(), // настройки вынесены в package.json, дабы получать их для любой задачи
+    mqpacker({ //Pack same CSS media query rules into one using PostCSS
+        sort: true
+    }),
+    atImport(), //PostCSS plugin to transform @import rules by inlining content.
+    inlineSVG(), //PostCSS plugin to reference an SVG file and control its attributes with CSS syntax
+    objectFitImages(),
+    imageInliner({
+        // Осторожнее с именами файлов картинок! Добавляйте имя блока как префикс к имени картинки.
+        assetPaths : [
+            'src/blocks/!**!/bg-img/',
+        ],
+        // Инлайнятся только картинки менее 5 Кб.
+        maxFileSize: 5120
+    })
+];*/
+
 module.exports = env => {
 
     // Получаем окуржение
@@ -46,7 +65,7 @@ module.exports = env => {
     // Основные настройки
     let common = merge(
         [{
-            entry: {
+            entry  : {
                 // bundle.js, style.css попадают в placeholder name
                 // пути указанные в свойстве актуальны для компиляции,
                 // т.е. собранный [name].{js,css} будет доступен по
@@ -55,72 +74,75 @@ module.exports = env => {
                 //'bundle/bundle.js': './bundle/bundle.js',
                 'css/style.css': dirs.srcPath + 'scss/style.scss'
             },
-            output: {
-                path: path.join(__dirname, dirs.buildPath),
+            output : {
+                path    : path.join(__dirname, dirs.buildPath),
                 filename: "[name]"
             },
             // опции лоадеров на генерацию source-map не влияют
             plugins: [
                 new webpack.ProvidePlugin({
-                    $: 'jquery',
+                    $     : 'jquery',
                     jQuery: 'jquery'
                 }),
                 // можно задать путь и расширение, но будет путаница
-                new ExtractTextPlugin('[name]', )
+                new ExtractTextPlugin('[name]')
             ],
-            module: {
+            module : {
                 rules: [
                     {
-                        test: /\.js$/,
+                        test   : /\.js$/,
                         exclude: /(node_modules|bower_components)/,
-                        use: {
-                            loader: 'babel-loader',
+                        use    : {
+                            loader : 'babel-loader',
                             options: {
                                 presets: ['@babel/preset-env']
                             }
                         }
                     },
                     {
-                        test: /\.(jpg|png|svg)$/,
-                        loader: 'file-loader',
+                        test   : /\.(jpg|png|svg)$/,
+                        loader : 'file-loader',
                         options: {
                             name: 'images/[name].[ext]'
                         },
                     },
                     // loader для компиляции scss в отдельный сss
                     {
-                        test: /\.scss$/,
-                        use: ExtractTextPlugin.extract({
+                        test   : /\.scss$/,
+                        exclude: /node_modules/,
+                        use    : ExtractTextPlugin.extract({
                             fallback: 'style-loader',
-                            use:
-                                [{
-                                    loader: 'css-loader',
+                            use: [
+                                {
+                                    loader : 'css-loader',
                                     options: {
                                         //url: false потому что иначе не заработало...
-                                        url: false,
+                                        url     : false,
                                         minimize: testEnv,
                                     }
                                 },
-                                    {
-                                        loader: 'sass-loader',
-                                }],
+                                'postcss-loader',
+                                {
+                                    loader: 'sass-loader',
+                                }
+                            ],
                         })
                     },
                     {
-                        test: /\.css$/,
+                        test   : /\.css$/,
                         include: [
                             // paths.css возможно понадобиться указать папку где лежат css
                         ],
-                        use: ExtractTextPlugin.extract({
-                            fallback: 'style-loader',
-                            use: 'css-loader',
+                        use    : ExtractTextPlugin.extract({
+                            //fallback: 'style-loader',
+                            use: ['style-loader', 'css-loader']
                         })
                     }
                 ]
             },
             watch:true
         }
-    ]);
+        ]);
 
     // возвращаем настройки
     if (!testEnv) {
@@ -142,11 +164,11 @@ module.exports = env => {
  * @param  {object}
  * @return {object}
  */
-function getFilesList(config){
+function getFilesList(config) {
 
     let res = {
         'css': [],
-        'js': [],
+        'js' : [],
         'img': [],
         'pug': [],
     };
@@ -154,8 +176,8 @@ function getFilesList(config){
     // Style
     for (let blockName in config.blocks) {
         res.css.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + '.scss');
-        if(config.blocks[blockName].length) {
-            config.blocks[blockName].forEach(function(elementName) {
+        if (config.blocks[blockName].length) {
+            config.blocks[blockName].forEach(function (elementName) {
                 res.css.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + elementName + '.scss');
             });
         }
@@ -166,8 +188,8 @@ function getFilesList(config){
     // JS
     for (let blockName in config.blocks) {
         res.js.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + '.js');
-        if(config.blocks[blockName].length) {
-            config.blocks[blockName].forEach(function(elementName) {
+        if (config.blocks[blockName].length) {
+            config.blocks[blockName].forEach(function (elementName) {
                 res.js.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + elementName + '.js');
             });
         }
