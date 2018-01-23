@@ -5,6 +5,7 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const merge = require('webpack-merge');
 const uglifyJS = require('./webpack/js.uglify');
 const devtool = require('./webpack/devtool');
+const StatsWriterPlugin = require("webpack-stats-plugin").StatsWriterPlugin;
 
 const paths = {
     build: path.join(__dirname, '../public'),
@@ -29,25 +30,6 @@ fs.writeFileSync(dirs.srcPath + 'scss/style.scss', styleImports);
 const now = Date.now() / 1000;
 const then = now - 10;
 fs.utimesSync( dirs.srcPath + 'scss/style.scss', then, then );
-
-// Перечисление и настройки плагинов postCSS, которыми обрабатываются стилевые файлы
-/*let postCssPlugins = [
-    autoprefixer(), // настройки вынесены в package.json, дабы получать их для любой задачи
-    mqpacker({ //Pack same CSS media query rules into one using PostCSS
-        sort: true
-    }),
-    atImport(), //PostCSS plugin to transform @import rules by inlining content.
-    inlineSVG(), //PostCSS plugin to reference an SVG file and control its attributes with CSS syntax
-    objectFitImages(),
-    imageInliner({
-        // Осторожнее с именами файлов картинок! Добавляйте имя блока как префикс к имени картинки.
-        assetPaths : [
-            'src/blocks/!**!/bg-img/',
-        ],
-        // Инлайнятся только картинки менее 5 Кб.
-        maxFileSize: 5120
-    })
-];*/
 
 module.exports = env => {
 
@@ -85,7 +67,11 @@ module.exports = env => {
                     jQuery: 'jquery'
                 }),
                 // можно задать путь и расширение, но будет путаница
-                new ExtractTextPlugin('[name]')
+                new ExtractTextPlugin('[name]'),
+                new StatsWriterPlugin({
+                    filename: "stats.json",
+                    fields: null
+                })
             ],
             module : {
                 rules: [
@@ -136,7 +122,8 @@ module.exports = env => {
                         use    : ExtractTextPlugin.extract({
                             //fallback: 'style-loader',
                             use: ['style-loader', 'css-loader']
-                        })
+                        }),
+                        exclude: /node_modules/
                     }
                 ]
             },
