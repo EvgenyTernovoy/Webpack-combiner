@@ -6,6 +6,8 @@ const merge = require('webpack-merge');
 const uglifyJS = require('./webpack/js.uglify');
 const devtool = require('./webpack/devtool');
 const StatsWriterPlugin = require("webpack-stats-plugin").StatsWriterPlugin;
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const extractHtml = new ExtractTextPlugin('[name].html');
 
 const paths = {
     build: path.join(__dirname, '../public'),
@@ -53,8 +55,11 @@ module.exports = env => {
                 // т.е. собранный [name].{js,css} будет доступен по
                 // paths.build + path/to/entry + [name].{js,css,etc.}
 
-                //'bundle/bundle.js': './bundle/bundle.js',
-                'css/style.css': dirs.srcPath + 'scss/style.scss'
+                'bundle/bundle.js': lists.js,
+                'css/style.css': dirs.srcPath + 'scss/style.scss',
+                index: [
+                    dirs.srcPath + 'test.pug'
+                ]
             },
             output : {
                 path    : path.join(__dirname, dirs.buildPath),
@@ -68,6 +73,9 @@ module.exports = env => {
                 }),
                 // можно задать путь и расширение, но будет путаница
                 new ExtractTextPlugin('[name]'),
+                /*new HtmlWebpackPlugin({
+                    template: dirs.srcPath + 'test.pug'
+                }),*/
                 new StatsWriterPlugin({
                     filename: "stats.json",
                     fields: null
@@ -81,8 +89,17 @@ module.exports = env => {
                         use    : {
                             loader : 'babel-loader',
                             options: {
-                                presets: ['@babel/preset-env']
+                                presets: ['@babel/preset-env'],
+                                //plugins: ['@babel/transform-runtime']
                             }
+                        }
+                    },
+                    {
+                        test   : /\.pug$/,
+                        use   : {
+                            loader : extractHtml.extract({
+                                loader: ['html-loader', 'pug-html-loader?pretty&exports=false']
+                            })
                         }
                     },
                     {
@@ -174,10 +191,17 @@ function getFilesList(config) {
 
     // JS
     for (let blockName in config.blocks) {
-        res.js.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + '.js');
+        let jsPath =  config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + '.js';
+        if(fileExist(jsPath)) {
+            res.js.push(jsPath);
+        }
+
         if (config.blocks[blockName].length) {
             config.blocks[blockName].forEach(function (elementName) {
-                res.js.push(config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + elementName + '.js');
+                let jsSubPath = config.dirs.srcPath + config.dirs.blocksDirName + '/' + blockName + '/' + blockName + elementName + '.js';
+                if(fileExist(jsPath)) {
+                    res.js.push(jsSubPath);
+                }
             });
         }
     }
@@ -196,4 +220,18 @@ function getFilesList(config) {
     }
 
     return res;
+}
+
+/**
+ * Проверка существования файла или папки
+ * @param  {string} path      Путь до файла или папки]
+ * @return {boolean}
+ */
+function fileExist(path) {
+    const fs = require('fs');
+    try {
+        fs.statSync(path);
+    } catch(err) {
+        return !(err && err.code === 'ENOENT');
+    }
 }

@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 
   var burgers = $$('.burger');
+    console.log();
 
   for (var i = 0; i < burgers.length; i++) {
     var burger = burgers[i];
