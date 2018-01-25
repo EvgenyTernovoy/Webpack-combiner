@@ -5,7 +5,7 @@ block meta
   meta(name='description', content='')
 
 block append head
-  link(rel='stylesheet', href='css/blocks-library.css')
+  link(rel='stylesheet', href='css/single.css')
   style.
     .components-demo {
       display: block;
@@ -175,7 +175,7 @@ block content
   +block-lib('logo', 'Логотип', false)
     include:markdown-it(linkify, html='true', typographer='true', quotes='«»') blocks/logo/readme.md
     +logo('/')
-      img(src='img/logo.svg', alt='Logo', width='64', height='15')
+      img(src=require('/img/logo.svg'), alt='Logo', width='64', height='15')
     +block-lib-code()
       include:show-code(first-line='//- Pug-файл этого блока:') blocks/logo/logo.pug
 

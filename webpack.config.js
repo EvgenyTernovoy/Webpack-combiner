@@ -78,6 +78,7 @@ module.exports = env => {
 
                 'js/script.js': lists.js,
                 'css/style.css': dirs.srcPath + 'scss/style.scss',
+                'css/single.css': projectConfig.singleCompiled,
                 'index.html': dirs.srcPath + 'index.pug',
                 'demo.html': dirs.srcPath + 'blocks-demo.pug',
 
@@ -137,7 +138,7 @@ module.exports = env => {
                         test   : /\.(jpg|png|svg)$/,
                         loader : 'file-loader',
                         options: {
-                            name: 'images/[name].[ext]'
+                            name: 'img/[name].[ext]'
                         },
                     },
                     // loader для компиляции scss в отдельный сss
