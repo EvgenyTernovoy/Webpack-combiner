@@ -7,7 +7,8 @@ const uglifyJS = require('./webpack/js.uglify');
 const devtool = require('./webpack/devtool');
 const StatsWriterPlugin = require("webpack-stats-plugin").StatsWriterPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const extractHtml = new ExtractTextPlugin('[name].html');
+const extractHtml = new ExtractTextPlugin('[name]');
+const extractSass = new ExtractTextPlugin('[name]');
 
 const paths = {
     build: path.join(__dirname, '../public'),
@@ -33,6 +34,26 @@ const now = Date.now() / 1000;
 const then = now - 10;
 fs.utimesSync( dirs.srcPath + 'scss/style.scss', then, then );
 
+// Формирование и запись списка примесей (mixins.pug) со списком инклудов всех pug-файлов блоков
+let pugMixins = '//- ВНИМАНИЕ! Этот файл генерируется автоматически. Не пишите сюда ничего вручную!\n//- Читайте ./README.md для понимания.\n\n';
+lists.pug.forEach(function(blockPath) {
+    pugMixins += 'include '+blockPath+'\n';
+});
+fs.writeFileSync(dirs.srcPath + 'pug/mixins.pug', pugMixins);
+
+// Pug-фильтр, выводящий содержимое pug-файла в виде форматированного текста
+const filterShowCode = function (text, options) {
+    var lines = text.split('\n');
+    var result = '<pre class="code">\n';
+    if (typeof(options['first-line']) !== 'undefined') result = result + '<code>' + options['first-line'] + '</code>\n';
+    for (var i = 0; i < (lines.length - 1); i++) { // (lines.length - 1) для срезания последней строки (пустая)
+        result = result + '<code>' + lines[i] + '</code>\n';
+    }
+    result = result + '</pre>\n';
+    result = result.replace(/<code><\/code>/g, '<code>&nbsp;</code>');
+    return result;
+}
+
 module.exports = env => {
 
     // Получаем окуржение
@@ -55,11 +76,11 @@ module.exports = env => {
                 // т.е. собранный [name].{js,css} будет доступен по
                 // paths.build + path/to/entry + [name].{js,css,etc.}
 
-                'bundle/bundle.js': lists.js,
+                'js/script.js': lists.js,
                 'css/style.css': dirs.srcPath + 'scss/style.scss',
-                index: [
-                    dirs.srcPath + 'test.pug'
-                ]
+                'index.html': dirs.srcPath + 'index.pug',
+                'demo.html': dirs.srcPath + 'blocks-demo.pug',
+
             },
             output : {
                 path    : path.join(__dirname, dirs.buildPath),
@@ -71,11 +92,11 @@ module.exports = env => {
                     $     : 'jquery',
                     jQuery: 'jquery'
                 }),
-                // можно задать путь и расширение, но будет путаница
-                new ExtractTextPlugin('[name]'),
                 /*new HtmlWebpackPlugin({
                     template: dirs.srcPath + 'test.pug'
                 }),*/
+                extractHtml,
+                extractSass,
                 new StatsWriterPlugin({
                     filename: "stats.json",
                     fields: null
@@ -96,11 +117,21 @@ module.exports = env => {
                     },
                     {
                         test   : /\.pug$/,
-                        use   : {
-                            loader : extractHtml.extract({
-                                loader: ['html-loader', 'pug-html-loader?pretty&exports=false']
-                            })
-                        }
+                        use   : extractHtml.extract({
+                            use: [
+                                'html-loader',
+                                {
+                                    loader : 'pug-html-loader',
+                                    options: {
+                                        pretty: true,
+                                        exports: false,
+                                        filters: {
+                                            'show-code': filterShowCode
+                                        }
+                                    }
+                                }
+                            ]
+                        })
                     },
                     {
                         test   : /\.(jpg|png|svg)$/,
@@ -113,7 +144,7 @@ module.exports = env => {
                     {
                         test   : /\.scss$/,
                         exclude: /node_modules/,
-                        use    : ExtractTextPlugin.extract({
+                        use    : extractSass.extract({
                             fallback: 'style-loader',
                             use: [
                                 {
